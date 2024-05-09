@@ -1,8 +1,9 @@
-package main
+package steamutils
 
 import (
 	"errors"
 	"os"
+	"regexp"
 	"runtime"
 
 	"golang.org/x/sys/windows/registry"
@@ -33,11 +34,23 @@ func GetSteamPath() (string, error) {
 	return steamPath, nil
 }
 
-/*func getLibraryFolder() (string, error) {
-	// path: steamapps/libraryfolder.vdf
-}*/
+func GetLibraryFolders(steamPath string) ([]string, error) {
+	content, err := os.ReadFile(steamPath + `\steamapps\libraryfolders.vdf`)
+	if err != nil {
+		return []string{}, err
+	}
+
+	regex := regexp.MustCompile(`"path"\s+"([^"]+)"`).FindAllSubmatch(content, -1)
+
+	paths := make([]string, len(regex))
+	for i, v := range regex {
+		paths[i] = string(v[1])
+	}
+
+	return paths, nil
+}
 
 func EraseDir(path string) error {
-	err := os.Remove(path)
+	err := os.RemoveAll(path)
 	return err
 }

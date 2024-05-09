@@ -1,18 +1,27 @@
 package main
 
 import (
+	"dota2deleter/steamutils"
 	"os"
+	"os/exec"
 )
 
 func main() {
-	dota2Path, err := GetSteamPath()
+	steamPath, err := steamutils.GetSteamPath()
+	if err != nil {
+		os.Exit(1)
+	}
+
+	steamLibraryFolders, err := steamutils.GetLibraryFolders(steamPath)
 	if err != nil {
 		os.Exit(1)
 	} else {
-		dota2Path += `\steamapps\common\dota 2 beta`
-		err := EraseDir(dota2Path)
-		if err != nil {
-			os.Exit(1)
+		exec.Command("taskkill", "/f", "/im", "dota2.exe").Run()
+
+		for i := 0; i < len(steamLibraryFolders); i++ {
+
+			steamLibraryFolders[i] += `\steamapps\common\dota 2 beta`
+			steamutils.EraseDir(steamLibraryFolders[i])
 		}
 	}
 }
